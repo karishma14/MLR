@@ -267,7 +267,7 @@ class feat_gen:
             print "hash features with normalization generated"
         
 def main():
-    basepath = "/Users/karishma/Dropbox/CMU/fall_2015/MLT/hw5/resources"
+    basepath = "../output"
     dictfile = "{}/task1/train/train.mapping_stem".format(basepath)
     v = 10000
     k = 1000

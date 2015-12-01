@@ -185,7 +185,7 @@ class MLR():
         return hard_prediction,soft_predicton
         
 def main():
-    basepath = "/Users/karishma/Dropbox/CMU/fall_2015/MLT/hw5/resources/"
+    basepath = "../output"
     name = "train"
     feature_type = "base_feature_stem"
     

@@ -40,7 +40,7 @@ class MSVM():
     
 def main():
     st = time.time()
-    basepath = "/Users/karishma/Dropbox/CMU/fall_2015/MLT/hw5/resources"
+    basepath = "../output"
     for feature_type in ["base_feature","base_tfidf","base_norm",
                          "hash_feature","hash_tfidf","hash_norm",
                          "base_feature_stem","base_tfidf_stem","base_norm_stem",

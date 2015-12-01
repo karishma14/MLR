@@ -123,15 +123,16 @@ def main():
     
     
     # all the input files
-    basepath = "/Users/karishma/Dropbox/CMU/fall_2015/MLT/hw5/resources"
-    stoplist = "{}/stopword.list".format(basepath)
+    baseinpath = "../input"
+    baseoutpath = "../output"
+    stoplist = "{}/stopword.list".format(baseinpath)
     
     for name in ["train", "dev", "test", "debug", "dummy"]:
         st = time.time()
         
-        inputfile = "{}/yelp_reviews_{}.json".format(basepath, name) #input file path
-        reviews = "{}/task1/{}/{}.base_stem".format(basepath, name, name)  # output file path -- reviews
-        ratings = "{}/task1/{}/{}.rating_stem".format(basepath, name, name)  # output file path -- ratings
+        inputfile = "{}/yelp_reviews_{}.json".format(baseinpath, name) #input file path
+        reviews = "{}/task1/{}/{}.base_stem".format(baseoutpath, name, name)  # output file path -- reviews
+        ratings = "{}/task1/{}/{}.rating_stem".format(baseoutpath, name, name)  # output file path -- ratings
     
         if not os.path.exists(os.path.dirname(reviews)): #construct required dir structure
             os.makedirs(os.path.dirname(reviews))
@@ -140,7 +141,7 @@ def main():
         dr.read_json(inputfile, ratings, reviews, stem=True) #process the data
         
         if name == "train": #tf for dictionary for train data
-            mappings = "{}/task1/{}/{}.mapping_stem".format(basepath, name, name)  # output file path -- mappings
+            mappings = "{}/task1/{}/{}.mapping_stem".format(baseoutpath, name, name)  # output file path -- mappings
             pickle.dump(dr._token_map, open(mappings, "w+"))
         
         print name, "time taken:", time.time() - st
