@@ -98,7 +98,7 @@ class MLR():
         self._theta += emp_update#apply empirical update
         
         #calculate the cost associated.
-        cost = (-1.0/batch_size)*np.sum(y*np.log(p)) +  (self._lamda/2*np.sum(self._theta))
+        cost = (-1.0/batch_size)*np.sum(y*np.log(p)) +  (self._lamda/2*np.sum(np.power(self._theta,2)))
         return cost
     
     
@@ -112,7 +112,7 @@ class MLR():
         np.random.set_state(state) #reset the state
         np.random.shuffle(self._label) #shuffle label
 
-    def train(self,batch_size):
+    def train(self,batch_size,figurepath):
         """
             Training the MLR model based on the parameter values available
             
@@ -120,6 +120,8 @@ class MLR():
             -----------
             batch_size: int
                 mini-batch size
+            figurepath: string
+                path where the plot of cost with epochs is stored
             
         """
         epoch_num = 1 #current epoch number
@@ -144,12 +146,18 @@ class MLR():
         
                 cost += self.update(y, x) #carry out gradient update for the batch
             cost_list.append(cost/batch_num) #store average cost per iteration
-            print "Epoch Number:",epoch_num,"Cost:",cost/batch_num, "Time taken:",time.time()-st
+            # print "Epoch Number:",epoch_num,"Cost:",cost/batch_num, "Time taken:",time.time()-st
             
             epoch_num +=1
-#         plt.plot(np.arange(len(cost_list)),cost_list) #plot the cost 
-#         plt.show() #display the cost over the epochs
-        
+        plt.plot(np.arange(len(cost_list)),cost_list) #plot the cost 
+        # plt.title("Average Cost per Epoch during Training Phrase")
+        plt.ylabel("Cost")
+        plt.xlabel("Epoch number")
+
+        # plt.imshow() #display the cost over the epochs
+        plt.savefig(figurepath)
+        plt.close()
+
     def test(self,data):
         """
             Test the data based on the trained model
@@ -187,35 +195,47 @@ class MLR():
 def main():
     basepath = "../output"
     name = "train"
-    feature_type = "base_feature_stem"
-    
-    datafile = "{}/task2/{}/{}.{}".format(basepath,name,name,feature_type)
+
     labelfile = "{}/task1/{}/{}.rating".format(basepath,name,name)
-    
-    #read the data
-    data = pickle.load(open(datafile,"r"))
     label = pickle.load(open(labelfile,"r"))
     
-    #train model
-    mlr = MLR(data,label,lr=0.05,lamda=0.0005,max_epoch=150)
-    mlr.train(batch_size=1000)
-    
-    name = "dev"
-    datafile = "{}/task2/{}/{}.{}".format(basepath,name,name,feature_type)
-    outfile = "{}/task3/{}/{}.{}".format(basepath,name,name, feature_type)
-    if not os.path.exists(os.path.dirname(outfile)):
-        os.makedirs(os.path.dirname(outfile))
-    
-    #load data
-    data = pickle.load(open(datafile,"r"))
-    #test
-    [hard_pred, soft_pred]=mlr.test(data)
-     
-    #write results to file
-    with open(outfile,"w+") as fp:
-        for h,s in zip(hard_pred,soft_pred):
-            fp.write("{} {}\n".format(h,s))
-    
+    for feature_type in [ "base_feature","base_tfidf",
+        "base_norm","hash_feature","hash_tfidf","hash_norm",
+        "hash_feature_stem","hash_tfidf_stem","hash_norm_stem",
+        "base_feature_stem","base_tfidf_stem","base_norm_stem"]:
+        
+        name = "train"
+        print feature_type
+        
+        datafile = "{}/task2/{}/{}.{}".format(basepath,name,name,feature_type)
+        
+        #read the data
+        data = pickle.load(open(datafile,"r"))
+        print "data read"
+        #train model
+        figurepath = "../images/{}.png".format(feature_type)
+        if not os.path.exists(os.path.dirname(figurepath)):
+            os.makedirs(os.path.dirname(figurepath))
+        
+        mlr = MLR(data,label,lr=0.05,lamda=0.0005,max_epoch=100)
+        mlr.train(batch_size=1000, figurepath=figurepath)
+        
+        name = "dev"
+        datafile = "{}/task2/{}/{}.{}".format(basepath,name,name,feature_type)
+        outfile = "{}/task3/{}.{}".format(basepath,name, feature_type)
+        if not os.path.exists(os.path.dirname(outfile)):
+            os.makedirs(os.path.dirname(outfile))
+        
+        #load data
+        data = pickle.load(open(datafile,"r"))
+        #test
+        [hard_pred, soft_pred]=mlr.test(data)
+         
+        #write results to file
+        with open(outfile,"w+") as fp:
+            for h,s in zip(hard_pred,soft_pred):
+                fp.write("{} {}\n".format(h,s))
+        
     
 if __name__ == "__main__":
     main()
