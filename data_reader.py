@@ -79,8 +79,10 @@ class data_reader:
         stemmer = PorterStemmer() #stemmer from nltk
         reader = open(inputfile, "r")
         self._df = dict()
-        
+        line_no = 0
         for line in reader.readlines():
+            # print line_no 
+            line_no+=1
             temp = json.loads(line)
             tokens = temp['text'].split(" ") #split into tokens separated by space. Step 1
             value = "" #dummy string to store result
@@ -143,7 +145,8 @@ def main():
         if name == "train": #tf for dictionary for train data
             mappings = "{}/task1/{}/{}.mapping_stem".format(baseoutpath, name, name)  # output file path -- mappings
             pickle.dump(dr._token_map, open(mappings, "w+"))
-        
+            df = "{}/task1/{}/{}.df_stem".format(baseoutpath,name,name) #store the term-document frequency
+            pickle.dump(dr._df, open(df,"w+"))
         print name, "time taken:", time.time() - st
     
 if __name__ == "__main__":
