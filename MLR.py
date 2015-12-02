@@ -146,7 +146,7 @@ class MLR():
         
                 cost += self.update(y, x) #carry out gradient update for the batch
             cost_list.append(cost/batch_num) #store average cost per iteration
-            # print "Epoch Number:",epoch_num,"Cost:",cost/batch_num, "Time taken:",time.time()-st
+            print "Epoch Number:",epoch_num,"Cost:",cost/batch_num, "Time taken:",time.time()-st
             
             epoch_num +=1
         plt.plot(np.arange(len(cost_list)),cost_list) #plot the cost 
@@ -199,10 +199,10 @@ def main():
     labelfile = "{}/task1/{}/{}.rating".format(basepath,name,name)
     label = pickle.load(open(labelfile,"r"))
     
-    for feature_type in [ "base_feature","base_tfidf",
-        "base_norm","hash_feature","hash_tfidf","hash_norm",
-        "hash_feature_stem","hash_tfidf_stem","hash_norm_stem",
-        "base_feature_stem","base_tfidf_stem","base_norm_stem"]:
+    for feature_type in [ "base_feature"]:#"base_feature","base_tfidf",
+        # "base_norm","hash_feature","hash_tfidf","hash_norm",
+        # "hash_feature_stem","hash_tfidf_stem","hash_norm_stem",
+        # "base_feature_stem","base_tfidf_stem","base_norm_stem"]:
         
         name = "train"
         print feature_type
@@ -211,9 +211,9 @@ def main():
         
         #read the data
         data = pickle.load(open(datafile,"r"))
-        print "data read"
+        
         #train model
-        figurepath = "../images/{}.png".format(feature_type)
+        figurepath = "../images/test_{}.png".format(feature_type)
         if not os.path.exists(os.path.dirname(figurepath)):
             os.makedirs(os.path.dirname(figurepath))
         

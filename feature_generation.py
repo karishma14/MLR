@@ -288,7 +288,7 @@ def main():
     v = 10000
     k = 1000
     
-    for name in ["debug","dummy","test","dev","train"]:
+    for name in ["test","dev","train"]:
         reviewsfile = "{}/task1/{}/{}.base_stem".format(basepath, name, name)
         
         base_feature = "{}/task2/{}/{}.base_feature_stem".format(basepath, name, name)

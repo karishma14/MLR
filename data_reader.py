@@ -129,7 +129,7 @@ def main():
     baseoutpath = "../output"
     stoplist = "{}/stopword.list".format(baseinpath)
     
-    for name in ["train", "dev", "test", "debug", "dummy"]:
+    for name in ["train", "dev", "test"]:
         st = time.time()
         
         inputfile = "{}/yelp_reviews_{}.json".format(baseinpath, name) #input file path
