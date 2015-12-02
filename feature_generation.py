@@ -37,7 +37,7 @@ class feat_gen:
          
     """
     
-    def _dictionary(self, filename, k):
+    def _dictionary(self, dictfile, docfreq, k):
         """
             This function reads the file which contains the token list and
             their frequency in the entire training corpus. Then it selects the
@@ -45,8 +45,12 @@ class feat_gen:
             
             Parameters
             -----------
-            filename: string
-                Path of the file which contains the tokens and their frequencies
+            dictfile: string
+                path of file containing the tokens in training corpus and their 
+                frequencies.
+            docfreq: string
+                path of the file containing the term-document frequencies. This is
+                needed to the tf-idf calculations.
             k: int
                 dictionary size
             
@@ -60,7 +64,8 @@ class feat_gen:
         temp_vocab = []
         
 
-        data = pickle.load(open(filename, "r"))
+        data = pickle.load(open(dictfile, "r"))
+        df = pickle.load(open(docfreq,"r"))
         for line in data.keys():
             # if the size of heap is smaller than k then add element
             if len(temp_vocab) <= k:
@@ -78,13 +83,15 @@ class feat_gen:
         for term in list(temp_vocab):
             #convert heap into dictionary keyed on the token and value is token id
             self._vocab[term[1]] = itr
-            #store the term frequency in case of tfidf calculations
-            self._idf.append(term[0])
+            #store the term-document frequency in case of tfidf calculations
+            self._idf.append(df[term[1]])
             itr += 1
-        self._idf = np.array(self._idf)
+        self._idf = np.array(self._idf,dtype="float")
+        self._idf = self._idf/1255353 #total number of documents is 1255353
+        self._idf = np.log(self._idf)
 
     
-    def basic_feat(self, reviewsfile, dictfile, outputfile, tfidf_file, 
+    def basic_feat(self, reviewsfile, dictfile, docfreq, outputfile, tfidf_file, 
                    norm_file, k, normFlag=False, tfidf=False):
         """
             This method simply maps each review text to sparse feature matrix.
@@ -99,6 +106,9 @@ class feat_gen:
             dictfile: string
                 path of file containing the tokens in training corpus and their 
                 frequencies.
+            docfreq: string
+                path of the file containing the term-document frequencies. This is
+                needed to the tf-idf calculations.
             outfile: string
                 path of the output file
             tfidf_file: string
@@ -118,7 +128,8 @@ class feat_gen:
             Output file format is sparse matrix
         """
         
-        self._dictionary(dictfile, k) #create the dictionary of top k terms
+        self._dictionary(dictfile, docfreq, k) #create the dictionary of top k terms
+        # self._idf = pickle.load(open(docfreq,"r"))
         row = list()
         column = list()
         val = list() #base values
@@ -149,7 +160,7 @@ class feat_gen:
                 
             #calculate the tfidf version for non zero terms
             if tfidf == True:
-                data_tfidf = tf[non_zero] / self._idf[non_zero]
+                data_tfidf = tf[non_zero] * self._idf[non_zero]
                 [val_idf.append(d) for d in data_tfidf]
             
             #calculate the normalized version for non zero terms
@@ -176,7 +187,8 @@ class feat_gen:
             print "base features with normalization generated"
         
         
-    def hash_feat(self, reviewsfile, dictfile, outputfile, tfidf_file, norm_file, v, k, normFlag=False, tfidf=False):
+    def hash_feat(self, reviewsfile, dictfile, docfreq, outputfile, 
+        tfidf_file, norm_file, v, k, normFlag=False, tfidf=False):
         """
             This method first generates the dictionary of specified size.
             It then considers only the terms from dictionary in each review
@@ -191,6 +203,9 @@ class feat_gen:
             dictfile: string
                 path of file containing the tokens in training corpus and their 
                 frequencies.
+            docfreq: string
+                path of the file containing the term-document frequencies. This is
+                needed to the tf-idf calculations.
             outfile: string
                 path of the output file
             tfidf_file: string
@@ -208,7 +223,7 @@ class feat_gen:
                 when true replace term frequency with tf-idf
         """
 
-        self._dictionary(filename=dictfile, k=v) #create the dictionary of top k terms
+        self._dictionary(dictfile,docfreq, k=v) #create the dictionary of top k terms
         row = list()
         column = list()
         val = list()#base values
@@ -239,7 +254,7 @@ class feat_gen:
             
             #create sparse matrix of tfidf terms and dump to output
             if tfidf == True:
-                data_tfidf = tf[non_zero] / idf[non_zero]
+                data_tfidf = tf[non_zero] * idf[non_zero]
                 [val_idf.append(d) for d in data_tfidf]
             
             #create sparse matrix of normalized terms and dump to output
@@ -269,11 +284,12 @@ class feat_gen:
 def main():
     basepath = "../output"
     dictfile = "{}/task1/train/train.mapping_stem".format(basepath)
+    docfreq = "{}/task1/train/train.df_stem".format(basepath)
     v = 10000
     k = 1000
     
     for name in ["debug","dummy","test","dev","train"]:
-        reviewsfile = "{}/task1/{}/{}.base".format(basepath, name, name)
+        reviewsfile = "{}/task1/{}/{}.base_stem".format(basepath, name, name)
         
         base_feature = "{}/task2/{}/{}.base_feature_stem".format(basepath, name, name)
         base_tfidf = "{}/task2/{}/{}.base_tfidf_stem".format(basepath, name, name)
@@ -288,13 +304,13 @@ def main():
             os.makedirs(os.path.dirname(base_feature))
         
         features = feat_gen()
-        features.basic_feat(reviewsfile, dictfile, base_feature, base_tfidf, 
+        features.basic_feat(reviewsfile, dictfile, docfreq, base_feature, base_tfidf, 
                             base_norm, k, normFlag=True, tfidf=True)
         
         print name, "basic features", time.time() - st
         st = time.time()
         
-        features.hash_feat(reviewsfile, dictfile, hash_feature, hash_tfidf, 
+        features.hash_feat(reviewsfile, dictfile, docfreq, hash_feature, hash_tfidf, 
                            hash_norm, v, k, normFlag=True, tfidf=True)
         
         print name, "hash features", time.time() - st
