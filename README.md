@@ -42,4 +42,6 @@ The input is expected in ```.json``` format located in the input directory. For 
 * ```MLR.py```
    The actual code for multinomial logistic regression is present here. 
 
+All the intermediate data is stored in pickle format to the disk.
+
 
